@@ -5,7 +5,17 @@ from discord.ext import commands
 import os
 import traceback
 
+
+import configparser
+
+# 設定ファイルからトークンを読み込む
+config = configparser.ConfigParser()
+config.read('config.ini')
+TOKEN = config.get('discord', 'token')
+
+# botのコマンドの接頭辞を設定
 bot = commands.Bot(command_prefix='/')
+# tokenを環境変数から取得
 token = os.environ['DISCORD_BOT_TOKEN']
 
 # 起動時に動作する処理
