@@ -1,3 +1,5 @@
+#carefull WIP
+
 # RiotAPI & Discord.py のガンク推測Bot
 
 ## 概要
