@@ -1,12 +1,9 @@
-# Riot Games APIを使用するためのライブラリをインポートする
-
-# from riotwatcher import RiotWatcher
 
 # サモナーネームを定義する変数を用意する
 summoner_name = 'おおいそともや'
 
 # riotapiのキーを定義する変数を用意する
-with open('D:\Work\discord_py_bot\ignores\riotapi_key.txt') as f:
+with open('D:/Work/discord_py_bot/ignores/riotapi_key.txt') as f:
     riotapi_key = f.read()
 
 # urlを指定する変数を用意する
