@@ -23,3 +23,8 @@ print(match)
 
 # # レスポンスの中身を確認する
 # print(response.json())
+
+# 実行元にmatchを返す為に関数を定義する
+def get_match():
+    return match
+
