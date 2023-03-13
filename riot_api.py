@@ -16,8 +16,8 @@ import requests
 response = requests.get(url)
 
 # レスポンスを確認する
-print(response)
+# print(response)
 
 # レスポンスの中身を確認する
-print(response.json())
+# print(response.json())
 

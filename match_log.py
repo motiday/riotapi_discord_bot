@@ -12,13 +12,13 @@ region = 'jp1'
 summoner_name = 'おおいそともや'
 summoner = watcher.summoner.by_name(region, summoner_name)
 matchlist = watcher.match.matchlist_by_puuid(region, summoner['puuid'])
-print(matchlist)
+# print(matchlist)
 # 取得したmatchlistは配列となっている
 # そのため、配列の中の要素を指定する必要がある
 # 今回は最新の試合の詳細を取得するため、配列の0番目を指定する
 
 match = watcher.match.by_id(region, matchlist[0])
-print(match)
+# print(match)
 
 
 # # レスポンスの中身を確認する
@@ -26,5 +26,5 @@ print(match)
 
 # 実行元にmatchを返す為に関数を定義する
 def get_match():
+    # matchをJSON形式で返す
     return match
-

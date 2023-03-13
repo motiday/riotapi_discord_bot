@@ -3,13 +3,22 @@
 # match_log.pyにあるget_match()関数を呼び出す
 # Path: cocords\riotapi_discord_bot\main.py
 import match_log
+import json
 
 match = match_log.get_match()
-print(match)
 
-# matchの結果から、試合の詳細を取得する
-# 試合詳細には敵から最もダメージを受けたプレイヤーの情報が含まれている
-# 最もダメージを受けたプレイヤーの情報を取得する
-# Path: cocords\riotapi_discord_bot\main.py
+# matchをjson形式に変換する
+match_json = json.dumps(match)
+# print(match_json)
 
-print(match['participants'][0])
+# match_jsonからmetadataを取得する
+# metadataには試合の詳細が含まれている
+# metadataを取得する
+metadata = match['metadata']
+# print(metadata)
+
+# metadataからinfoを取得する
+# infoには試合の詳細が含まれている
+# infoを取得する
+info = match['info']
+print(info)
