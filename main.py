@@ -22,3 +22,9 @@ metadata = match['metadata']
 # infoを取得する
 info = match['info']
 print(info)
+
+participants = match['info']['participants']
+
+# 参加者の名前を取得する
+for participant in participants:
+    print(participant['summonerName'])
