@@ -38,13 +38,15 @@ async def on_message(message):
         # テキストチャンネルも作成する処理
         await guild.create_text_channel(party_name, overwrites=overwrites)
 
+        # ギルドのチャンネルのコレクションを取得
+        channels = guild.channels
+        # チャンネルのコレクションからボイスチャンネル名の一致するボイスチャンネルのIDを取得する
+        voice_channel = list(
+            filter(lambda c: c.name == party_name, channels))[0]
+
+        voice_channel_id = voice_channel.id
         # パーティ作成者にメンションを付けてメッセージを送信する
-        await message.channel.send(f'{message.author.mention} パーティを作成しました。')
-
-        # 作成されたボイスチャンネルが誰もいない場合が10分続いた場合　削除する
-        # ボイスチャンネルの削除処理
-
-        # テキストチャンネルの削除処理
+        await message.channel.send(f'{message.author.mention} パーティを作成しました★{party_name} 開かれたパーティはこっちだよ！。 https://discord.com/channels/{guild.id}/{voice_channel_id}')
 
     # パーティ募集文からパーティが作成された時の処理
     if message.content.startswith('!joinparty'):
@@ -58,6 +60,21 @@ async def on_message(message):
 
         # パーティ作成者にメンションを付けてメッセージを送信する
         await message.channel.send(f'{message.author.mention} パーティに参加しました。')
+
+
+@bot.command()
+async def invite(ctx):
+    guild = ctx.guild  # コマンドを実行したギルドを取得
+    channels = guild.channels  # ギルドのチャンネルのコレクションを取得
+    voice_channel = channels.find(
+        lambda c: c.type == "voice" and c.name == "General")  # ボイスチャンネル"General"を探す
+    if voice_channel:  # ボイスチャンネルが見つかった場合
+        invite = await voice_channel.create_invite()  # 招待リンクを作成
+        embed = discord.Embed(title="Join Voice Channel",
+                              description=f"Click [here]({invite.url}) to join {voice_channel.name}.")  # 埋め込みメッセージを作成
+        await ctx.send(embed=embed)  # 埋め込みメッセージを送信
+    else:  # ボイスチャンネルが見つからなかった場合
+        await ctx.send("Voice channel not found.")  # エラーメッセージを送信
 
 
 @bot.event
