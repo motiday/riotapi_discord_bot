@@ -18,6 +18,12 @@ with open('D:/Work/discord_py_bot/ignores/discord_token.txt') as f:
 
 @bot.event
 async def on_message(message):
+    # テキストチャンネル「冒険者ギルド」のIDを指定
+    CHANNEL_ID = 1090650082027786241
+    # テキストチャンネル「冒険者ギルド」以外の場合は処理を終了する
+    if message.channel.id != CHANNEL_ID:
+        return
+
     # パーティ募集文からパーティが作成された時の処理
     if message.content.startswith('!createparty'):
         # 入力文字列のチェック
@@ -32,11 +38,17 @@ async def on_message(message):
             guild.default_role: discord.PermissionOverwrite(read_messages=False),
             guild.me: discord.PermissionOverwrite(read_messages=True)
         }
-        # ボイスチャットチャンネルを作成する処理
-        await guild.create_voice_channel(party_name, overwrites=overwrites)
 
-        # テキストチャンネルも作成する処理
-        await guild.create_text_channel(party_name, overwrites=overwrites)
+        # カテゴリー指定を行う ボイスチャンネルのカテゴリーを指定
+        voice_category = discord.utils.get(
+            guild.categories, id=1090650307517763604)
+        # ボイスチャットチャンネルを作成する処理
+        await guild.create_voice_channel(party_name, overwrites=overwrites, category=voice_category)
+        # カテゴリー指定を行う テキストチャンネルのカテゴリーを指定
+        text_category = discord.utils.get(
+            guild.categories, id=1090650859328786594)
+        # テキストチャンネルを作成する処理
+        await guild.create_text_channel(party_name, overwrites=overwrites, category=text_category)
 
         # ギルドのチャンネルのコレクションを取得
         channels = guild.channels
@@ -48,37 +60,30 @@ async def on_message(message):
         # パーティ作成者にメンションを付けてメッセージを送信する
         await message.channel.send(f'{message.author.mention} パーティを作成しました★{party_name} 開かれたパーティはこっちだよ！。 https://discord.com/channels/{guild.id}/{voice_channel_id}')
 
-    # パーティ募集文からパーティが作成された時の処理
-    if message.content.startswith('!joinparty'):
-        party_name = message.content.split(' ')[1]
-        guild = message.guild
-        # パーティに参加する処理 (ボイスチャンネルとテキストチャンネルに参加する処理)
+    # ダイレクトメッセージの場合
+    # 匿名チャットの処理
+    # このボットにDMを送った場合、そのメッセージをテキストチャンネル「秘密の花園」へ送信する
+    if isinstance(message.channel, discord.DMChannel):
+        client = discord.Client(intents=intents)
+        # 自分のメッセージは無視する
+        if message.author == client.user:
+            return
 
-        # パーティのボイスチャンネルに参加する処理
+        # テキストチャンネル「秘密の花園」のIDを指定
+        CHANNEL_ID = 1090642220958371840
+        # テキストチャンネル「秘密の花園」を取得
+        channel = bot.get_channel(CHANNEL_ID)
 
-        # パーティのテキストチャンネルに参加する処理
-
-        # パーティ作成者にメンションを付けてメッセージを送信する
-        await message.channel.send(f'{message.author.mention} パーティに参加しました。')
-
-
-@bot.command()
-async def invite(ctx):
-    guild = ctx.guild  # コマンドを実行したギルドを取得
-    channels = guild.channels  # ギルドのチャンネルのコレクションを取得
-    voice_channel = channels.find(
-        lambda c: c.type == "voice" and c.name == "General")  # ボイスチャンネル"General"を探す
-    if voice_channel:  # ボイスチャンネルが見つかった場合
-        invite = await voice_channel.create_invite()  # 招待リンクを作成
-        embed = discord.Embed(title="Join Voice Channel",
-                              description=f"Click [here]({invite.url}) to join {voice_channel.name}.")  # 埋め込みメッセージを作成
-        await ctx.send(embed=embed)  # 埋め込みメッセージを送信
-    else:  # ボイスチャンネルが見つからなかった場合
-        await ctx.send("Voice channel not found.")  # エラーメッセージを送信
+        # テキストチャンネル「秘密の花園」にメッセージを送信
+        await channel.send(f'匿名さんからのメッセージです。 \n{message.content}')
 
 
 @bot.event
 async def on_voice_state_update(member, before, after):
+    # 対象のボイスチャンネル名が「general」の場合は処理を終了する
+    if before.channel is not None and before.channel.name == 'general':
+        return
+
     # ボイスチャンネルから退出したとき
     if before.channel is not None and after.channel is None:
 
@@ -102,5 +107,3 @@ async def on_voice_state_update(member, before, after):
 
 
 bot.run(discord_token)
-# 「SERVER MEMBERS INTENT」と「PRESENCE INTENT」が有効化されていることを確認する
-# TODO WARNING  discord.ext.commands.bot Privileged message content intent is missing, commands may not work as expected.
