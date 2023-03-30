@@ -105,5 +105,29 @@ async def on_voice_state_update(member, before, after):
             # チャンネルを削除したことをテキストチャンネルに通知
         await member.guild.system_channel.send(f'あれれ、誰もいないみたい {before.channel.name} チャンネルを削除するよ。')
 
+# ユーザーが特定のコメントにリアクションをしたときに、そのユーザーに特定のロールを付与する処理
+@bot.event
+async def on_raw_reaction_add(payload):
+    # リアクションをしたメッセージのID
+    message_id = payload.message_id
+    # リアクションをしたユーザーのID
+    user_id = payload.user_id
+    # リアクションをしたチャンネルのID
+    channel_id = payload.channel_id
+    # リアクションをしたユーザーのリアクション
+    emoji = payload.emoji.name
+
+    # リアクションをしたメッセージが特定のメッセージであるかどうかを確認する
+    if message_id == 1091009091821908118:
+        # リアクションをしたユーザーのリアクションが特定のリアクションであるかどうかを確認する
+        if emoji == '👍':
+            # リアクションをしたユーザーのリアクションが特定のリアクションである場合、特定のロールを付与する
+            guild_id = payload.guild_id
+            guild = discord.utils.find(lambda g: g.id == guild_id, bot.guilds)
+            role = discord.utils.get(guild.roles, name='女')
+            member = discord.utils.find(lambda m: m.id == user_id, guild.members)
+            if role is not None:
+                await member.add_roles(role)
+                print('ロールを付与しました。')
 
 bot.run(discord_token)
