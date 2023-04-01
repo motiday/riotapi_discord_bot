@@ -11,6 +11,20 @@ intents.members = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 
+# ロールをまとめたオブジェクト
+# TODO 今後ロールが増える場合ここに追記していく
+server_roles_list = [{
+    'emoji_type': '☠️',
+    'role_name': 'ガンガンファイト',
+}, {
+    'emoji_type': '🥱',
+    'role_name': '非戦闘',
+}, {
+    'emoji_type': '🕵️',
+    'role_name': 'タスク一筋',
+},
+]
+
 # riotapiのキーを定義する変数を用意する
 with open('D:/Work/discord_py_bot/ignores/discord_token.txt') as f:
     discord_token = f.read()
@@ -106,6 +120,10 @@ async def on_voice_state_update(member, before, after):
         await member.guild.system_channel.send(f'あれれ、誰もいないみたい {before.channel.name} チャンネルを削除するよ。')
 
 # ユーザーが特定のコメントにリアクションをしたときに、そのユーザーに特定のロールを付与する処理
+
+# 固定のチャンネルにリアクションをすると、そのユーザーに特定のロールを付与する処理
+
+
 @bot.event
 async def on_raw_reaction_add(payload):
     # リアクションをしたメッセージのID
@@ -118,16 +136,56 @@ async def on_raw_reaction_add(payload):
     emoji = payload.emoji.name
 
     # リアクションをしたメッセージが特定のメッセージであるかどうかを確認する
-    if message_id == 1091009091821908118: # メッセージIDを指定
+    if message_id == 1091009091821908118:  # メッセージIDを指定
+
+        # この処理で、リアクションをしたユーザーに特定のロールを付与する
+        # ユーザーはロールを一つしか持てないので、リアクションをしたユーザーに特定のロールを付与する前に、
+        # そのユーザーが持っているロールをすべて削除する
+        guild_id = payload.guild_id
+        guild = discord.utils.find(lambda g: g.id == guild_id, bot.guilds)
+        member = discord.utils.find(lambda m: m.id == user_id, guild.members)
+
         # リアクションをしたユーザーのリアクションが特定のリアクションであるかどうかを確認する
-        if emoji == '👍':
-            # リアクションをしたユーザーのリアクションが特定のリアクションである場合、特定のロールを付与する
-            guild_id = payload.guild_id
-            guild = discord.utils.find(lambda g: g.id == guild_id, bot.guilds)
-            role = discord.utils.get(guild.roles, name='女')
-            member = discord.utils.find(lambda m: m.id == user_id, guild.members)
-            if role is not None:
-                await member.add_roles(role)
-                print('ロールを付与しました。')
+        # server_roles_list から一致する絵文字を持つロールを取得する
+        for server_role in server_roles_list:
+            if emoji == server_role['emoji_type']:
+                # リアクションをしたユーザーのリアクションが特定のリアクションである場合、特定のロールを付与する
+                role = discord.utils.get(
+                    guild.roles, name=server_role['role_name'])
+                if role is not None:
+                    await member.add_roles(role)
+                    print('ロールを付与しました。')
+
+
+# リアクションを取り消したときに、そのユーザーの特定のロールを削除する処理
+@bot.event
+async def on_raw_reaction_remove(payload):
+    # リアクションをしたメッセージのID
+    message_id = payload.message_id
+    # リアクションをしたユーザーのID
+    user_id = payload.user_id
+    # リアクションをしたチャンネルのID
+    channel_id = payload.channel_id
+    # リアクションをしたユーザーのリアクション
+    emoji = payload.emoji.name
+
+    # リアクションをしたメッセージが特定のメッセージであるかどうかを確認する
+    if message_id == 1091009091821908118:  # メッセージIDを指定
+
+        # この処理で、リアクションをしたユーザーの特定のロールを削除する
+        guild_id = payload.guild_id
+        guild = discord.utils.find(lambda g: g.id == guild_id, bot.guilds)
+        member = discord.utils.find(lambda m: m.id == user_id, guild.members)
+
+        # リアクションをしたユーザーのリアクションが特定のリアクションであるかどうかを確認する
+        # server_roles_list から一致する絵文字を持つロールを取得する
+        for server_role in server_roles_list:
+            if emoji == server_role['emoji_type']:
+                # リアクションをしたユーザーのリアクションが特定のリアクションである場合、特定のロールを削除する
+                role = discord.utils.get(
+                    guild.roles, name=server_role['role_name'])
+                if role is not None:
+                    await member.remove_roles(role)
+                    print('ロールを削除しました。')
 
 bot.run(discord_token)
