@@ -29,6 +29,8 @@ server_roles_list = [{
 with open('D:/Work/discord_py_bot/ignores/discord_token.txt') as f:
     discord_token = f.read()
 
+# パーティ作成のコマンドから実行される処理
+
 
 @bot.event
 async def on_message(message):
@@ -56,19 +58,24 @@ async def on_message(message):
         # カテゴリー指定を行う ボイスチャンネルのカテゴリーを指定
         voice_category = discord.utils.get(
             guild.categories, id=1090650307517763604)
+        # TODO ロールによるボイスチャンネルの入場制限を設ける
+        
+
+
         # ボイスチャットチャンネルを作成する処理
-        await guild.create_voice_channel(party_name, overwrites=overwrites, category=voice_category)
-        # カテゴリー指定を行う テキストチャンネルのカテゴリーを指定
+        await guild.create_voice_channel(name=party_name.lower(), overwrites=overwrites, category=voice_category)
+        # カテゴリー指定を行う テキストチャンネルのカテゴリーを指定　今回は「群れチャット」を指定する
         text_category = discord.utils.get(
             guild.categories, id=1090650859328786594)
         # テキストチャンネルを作成する処理
-        await guild.create_text_channel(party_name, overwrites=overwrites, category=text_category)
+        await guild.create_text_channel(name=party_name.lower(), overwrites=overwrites, category=text_category)
 
+        print(party_name.lower())
         # ギルドのチャンネルのコレクションを取得
         channels = guild.channels
         # チャンネルのコレクションからボイスチャンネル名の一致するボイスチャンネルのIDを取得する
         voice_channel = list(
-            filter(lambda c: c.name == party_name, channels))[0]
+            filter(lambda c: c.name == party_name.lower(), channels))[0]
 
         voice_channel_id = voice_channel.id
         # パーティ作成者にメンションを付けてメッセージを送信する
@@ -111,17 +118,26 @@ async def on_voice_state_update(member, before, after):
             await asyncio.sleep(delay_seconds)  # 待機
             await before.channel.delete()
 
-            # 削除実行後にボイスチャンネルと同名のテキストチャンネルを削除
-        for channel in member.guild.channels:
-            if channel.name == before.channel.name:
-                await channel.delete()
+            # ボイスチャンネルの名前を取得
+            channel_name = before.channel.name
+            # 取得したボイスチャンネルと同名のサーバー内の同じ名前のテキストチャンネルとボイスチャンネルを取得する
+            for guild in bot.guilds:
+                text_channel = discord.utils.get(
+                    guild.text_channels, name=channel_name)
+                # 取得したテキストチャンネルを出力
+                print(text_channel)
+                voice_channel = discord.utils.get(
+                    guild.voice_channels, name=channel_name)
 
-            # チャンネルを削除したことをテキストチャンネルに通知
-        await member.guild.system_channel.send(f'あれれ、誰もいないみたい {before.channel.name} チャンネルを削除するよ。')
+                # チャンネルが存在する場合は削除する
+                if text_channel is not None:
+                    await text_channel.delete()
+                if voice_channel is not None:
+                    await voice_channel.delete()
 
-# ユーザーが特定のコメントにリアクションをしたときに、そのユーザーに特定のロールを付与する処理
-
-# 固定のチャンネルにリアクションをすると、そのユーザーに特定のロールを付与する処理
+            # 「冒険者ギルド」テキストチャンネルにメッセージを送信
+            channel = bot.get_channel(1090650082027786241)
+            await channel.send(f'あれれ、誰もいないみたい {before.channel.name} チャンネルを削除するよ。')
 
 
 @bot.event
@@ -188,4 +204,5 @@ async def on_raw_reaction_remove(payload):
                     await member.remove_roles(role)
                     print('ロールを削除しました。')
 
+# ボットの起動とDiscordサーバーへの接続
 bot.run(discord_token)
